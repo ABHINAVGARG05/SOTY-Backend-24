@@ -10,12 +10,19 @@ const getQuestions = async (req, res) => {
   const { difficultyLevel } = req.query;
 
   try {
-    if (!questionModel.length) {
-      return res.status(200).json(
-        {
+
+    const isLastAnswered = await checkLastQuestionAnswered(id, difficultyLevel);
+    if (!isLastAnswered) {
+      return res.status(400).json({
+        message: "Please answer the last question before getting a new one.",
+      });
+    }
+
+    const totalQuestions = await questionModel.countDocuments();
+    if (totalQuestions === 0) {
+      return res.status(200).json({
         message: "No questions available.",
-        }
-      );
+      });
     }
 
     const existingUnansweredQuestion = await questionModel.findOne({
